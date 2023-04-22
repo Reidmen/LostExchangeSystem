@@ -2,10 +2,13 @@
 Implements ABC account and member.
 
 Author: Reidmen <r.rethmawn@gmail.com>
-Date: 04/13/2023
+Date: 04/22/2023
+
+Each client (in the server) must be identified through an
+account object.
 """
-from datetime import datetime
 from abc import ABC, abstractmethod
+from Constants import AccountStatus
 
 
 class Account(ABC):
@@ -17,7 +20,7 @@ class Account(ABC):
         address: str,
         email: str,
         phone: str,
-        status=Status,
+        status=AccountStatus,
     ):
 
         self.__id = id

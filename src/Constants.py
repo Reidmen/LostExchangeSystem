@@ -14,6 +14,12 @@ class OrderStatus(Enum):
     FILLED = 1
     PARTIALLY_FILLED = 2
     CANCELLED = 3
+    NOT_CANCELLED = 4
+
+
+class OrderType(Enum):
+    BUY = 1
+    SELL = 2
 
 
 class AccountStatus(Enum):
@@ -31,18 +37,3 @@ class TimeEnforcementType(Enum):
     ON_THE_OPEN = 3
     ON_THE_CLOSED = 4
 
-
-class Location:
-    def __init__(
-        self, street: str, city: str, state: str, zip_code: float, country: str
-    ):
-        self.__street_address = street
-        self.__city = city
-        self.__state = state
-        self.__zip_code = zip_code
-        self.__country = country
-
-
-class Constants:
-    def __init__(self):
-        self.__MONEY_TRANSFER_LIMIT = 100_000
