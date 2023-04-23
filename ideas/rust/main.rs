@@ -34,7 +34,18 @@ impl OrderBook {
                     }
                 }
             }
-            BidOrAsk::Ask => {}
+            BidOrAsk::Ask => {
+                let price = Price::new(price);
+
+                match self.asks.get_mut(&price) {
+                    Some(limit) => limit.add_order(price),
+                    None => {
+                        let mut limit = Limit::new(price);
+                        limit.add_order(order);
+                        self.asks.insert(price, limit);
+                    }
+                }
+            }
         }
     }
 }
@@ -98,5 +109,8 @@ fn main() {
 
     orderbook.add_order(4.4, buy_order_from_alice);
     orderbook.add_order(4.4, buy_order_from_bob);
+
+    let sell_order_from_jhon = Order::new(BidOrAsk::Ask, 7.6);
+    orderbook.add_order(20.0, sell_order_from_jhon);
     println!("{:?}", orderbook);
 }
