@@ -1,11 +1,12 @@
 # LostExchangeSystem
-A practical Stock Exchange System
+A Lost Stock Exchange System trying to find its way back!
 
 ## Ideas
 
 * Introduce the Account, Member and Order classes that define a brokage system.
 * Use python for high-level implementation of them. 
-* Expand them into cpp for low-latency cases.
+* Overview of the Exchange system is provided in the `python/` folder.
+* Implementation will be done in rust, specially for the low-latency cases.
 
 
 ## How to build a Fast Limit Order Book 
