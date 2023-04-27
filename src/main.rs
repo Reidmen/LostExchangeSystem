@@ -38,7 +38,7 @@ impl OrderBook {
                 let price = Price::new(price);
 
                 match self.asks.get_mut(&price) {
-                    Some(limit) => limit.add_order(price),
+                    Some(limit) => limit.add_order(order),
                     None => {
                         let mut limit = Limit::new(price);
                         limit.add_order(order);
