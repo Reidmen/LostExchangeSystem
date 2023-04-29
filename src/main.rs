@@ -1,105 +1,6 @@
-use std::collections::HashMap;
-
-#[derive(Debug)]
-enum BidOrAsk {
-    Bid,
-    Ask,
-}
-
-#[derive(Debug)]
-struct OrderBook {
-    asks: HashMap<Price, Limit>,
-    bids: HashMap<Price, Limit>,
-}
-
-impl OrderBook {
-    fn new() -> OrderBook {
-        OrderBook {
-            asks: HashMap::new(),
-            bids: HashMap::new(),
-        }
-    }
-
-    fn add_order(&mut self, price: f64, order: Order) {
-        match order.bid_or_ask {
-            BidOrAsk::Bid => {
-                let price = Price::new(price);
-
-                match self.bids.get_mut(&price) {
-                    Some(limit) => limit.add_order(order),
-                    None => {
-                        let mut limit = Limit::new(price);
-                        limit.add_order(order);
-                        self.bids.insert(price, limit);
-                    }
-                }
-            }
-            BidOrAsk::Ask => {
-                let price = Price::new(price);
-
-                match self.asks.get_mut(&price) {
-                    Some(limit) => limit.add_order(order),
-                    None => {
-                        let mut limit = Limit::new(price);
-                        limit.add_order(order);
-                        self.asks.insert(price, limit);
-                    }
-                }
-            }
-        }
-    }
-}
-
-#[derive(Debug, Eq, PartialEq, Hash, Clone, Copy)]
-struct Price {
-    integral: u64,
-    fractional: u64,
-    scalar: u64,
-}
-
-impl Price {
-    fn new(price: f64) -> Price {
-        let scalar = 1000000;
-        let integral = price as u64;
-        let fractional = ((price % 1.0) * scalar as f64) as u64;
-        Price {
-            scalar,
-            integral,
-            fractional,
-        }
-    }
-}
-
-#[derive(Debug)]
-struct Limit {
-    price: Price,
-    orders: Vec<Order>,
-}
-
-impl Limit {
-    fn new(price: Price) -> Limit {
-        Limit {
-            price,
-            orders: Vec::new(),
-        }
-    }
-
-    fn add_order(&mut self, order: Order) {
-        self.orders.push(order);
-    }
-}
-
-#[derive(Debug)]
-struct Order {
-    bid_or_ask: BidOrAsk,
-    size: f64,
-}
-
-impl Order {
-    fn new(bid_or_ask: BidOrAsk, size: f64) -> Order {
-        Order { bid_or_ask, size }
-    }
-}
+mod engine;
+use engine::engine::{MatchingEngine, TradingPair};
+use engine::orderbook::{BidOrAsk, Order, OrderBook};
 
 fn main() {
     let buy_order_from_alice = Order::new(BidOrAsk::Bid, 5.5);
@@ -112,5 +13,14 @@ fn main() {
 
     let sell_order_from_jhon = Order::new(BidOrAsk::Ask, 7.6);
     orderbook.add_order(20.0, sell_order_from_jhon);
-    println!("{:?}", orderbook);
+    // println!("{:?}", orderbook);
+
+    let mut engine = MatchingEngine::new();
+    let pair = TradingPair::new("BTC".to_string(), "USD".to_string());
+    engine.add_new_pair(pair.clone());
+
+    let buy_order = Order::new(BidOrAsk::Bid, 6.5);
+    //let eth_pair = TradingPair::new("ETH".to_string(), "USD".to_string());
+    engine.place_limit_order(pair, 10.000, buy_order).unwrap();
+
 }
