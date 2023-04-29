@@ -153,6 +153,11 @@ pub mod tests {
         let matched_limit = ask_limits.get(0).unwrap();
 
         assert_eq!(matched_limit.price, dec!(100));
+        assert_eq!(market_order.is_filled(), true);
+
+
+        let matched_order = matched_limit.orders.get(0).unwrap();
+        assert_eq!(matched_order.is_filled(), true);
 
         println!("{:?}", orderbook.ask_limits());
     }
