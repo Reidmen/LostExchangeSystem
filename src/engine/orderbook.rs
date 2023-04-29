@@ -78,6 +78,15 @@ impl Limit {
         }
     }
 
+    fn total_volume(self) -> f64 {
+        return self
+            .orders
+            .iter()
+            .map(|order| order.size)
+            .reduce(|a, b| a + b)
+            .unwrap();
+    }
+
     fn fill_order(&mut self, market_order: &mut Order) {
         for limit_order in self.orders.iter_mut() {
             match market_order.size >= limit_order.size {
@@ -117,10 +126,22 @@ impl Order {
     }
 }
 
-
 #[cfg(test)]
 pub mod tests {
     use super::*;
+
+    #[test]
+    fn limit_total_volume() {
+        let price = Price::new(1000.0);
+        let mut limit = Limit::new(price);
+        let buy_limit_order_a = Order::new(BidOrAsk::Bid, 100.0);
+        let buy_limit_order_b = Order::new(BidOrAsk::Bid, 100.0);
+
+        limit.add_order(buy_limit_order_a);
+        limit.add_order(buy_limit_order_b);
+
+        assert_eq!(limit.total_volume(), 200.0);
+    }
 
     #[test]
     fn limit_order_multiple_fill() {
@@ -136,10 +157,10 @@ pub mod tests {
         limit.fill_order(&mut market_sell_order);
 
         assert_eq!(market_sell_order.is_filled(), true);
-        assert_eq!(limit.orders.get(0).unwrap().is_filled(), true); 
+        assert_eq!(limit.orders.get(0).unwrap().is_filled(), true);
         assert_eq!(limit.orders.get(1).unwrap().is_filled(), false);
 
-        println!("{:?}", limit);
+        println!("{:?}", limit)
     }
 
     #[test]
@@ -154,6 +175,6 @@ pub mod tests {
         limit.fill_order(&mut market_sell_order);
 
         assert_eq!(market_sell_order.is_filled(), true);
-        assert_eq!(limit.orders.get(0).unwrap().size, 1.0); 
+        assert_eq!(limit.orders.get(0).unwrap().size, 1.0);
     }
 }
