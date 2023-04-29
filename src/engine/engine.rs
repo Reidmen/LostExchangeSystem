@@ -48,8 +48,8 @@ impl MatchingEngine {
                 Ok(())
             }
             None => Err(format!(
-                    "The orderbook for the trading pair ({}), does not exist",
-                    pair.to_string()
+                "The orderbook for the trading pair ({}), does not exist",
+                pair.to_string()
             )),
         }
     }
