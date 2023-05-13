@@ -6,7 +6,7 @@ A Lost Stock Exchange System trying to find its way back!
 * Introduce the Account, Member and Order classes that define a brokage system.
 * Use python for high-level implementation of them. 
 * Overview of the Exchange system is provided in the `src/` folder.
-* Implementation will be done in go or rust (to be decided soon), specially for the low-latency cases.
+* Implementation will be done in c++ or rust (to be decided soon), specially for the low-latency cases.
 * Other attempts will be given in `ideas/` folder.
 
 
