@@ -2,10 +2,7 @@ import asyncio
 
 
 class Client:
-    def __init__(
-            self,
-            reader: asyncio.StreamReader,
-            writer: asyncio.StreamWriter):
+    def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
         self.__reader: asyncio.StreamReader = reader
         self.__writer: asyncio.StreamWriter = writer
 
