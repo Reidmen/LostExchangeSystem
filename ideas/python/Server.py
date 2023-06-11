@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import pathlib
+import hashlib
 
 # import datetime
 import os
@@ -47,11 +48,13 @@ class Server:
         logger.setLevel(logging.DEBUG)
 
         sh = logging.StreamHandler()
-        fh = logging.FileHandler(filename=f"logs/server.log")
+        fh = logging.FileHandler(filename="logs/server.log")
         sh.setLevel(logging.INFO)
         fh.setLevel(logging.DEBUG)
 
-        formatter = logging.Formatter("[%(asctime)s] :: %(levelname)s :: %(message)s")
+        formatter = logging.Formatter(
+            "[%(asctime)s] :: %(levelname)s :: %(message)s"
+        )
         sh.setFormatter(formatter)
         fh.setFormatter(formatter)
 
@@ -62,7 +65,9 @@ class Server:
 
     def start_server(self):
         try:
-            self.server = asyncio.start_server(self.accept_client, self.ip, self.port)
+            self.server = asyncio.start_server(
+                self.accept_client, self.ip, self.port
+            )
             self.loop.run_until_complete(self.server)
             self.loop.run_forever()
         except Exception as exc:
@@ -80,7 +85,9 @@ class Server:
         self.loop.stop()
 
     def accept_client(
-        self, client_reader: asyncio.StreamReader, client_writer: asyncio.StreamWriter
+        self,
+        client_reader: asyncio.StreamReader,
+        client_writer: asyncio.StreamWriter,
     ):
         client = Client(client_reader, client_writer)
         task = asyncio.Task(self.handle_client(client))
@@ -94,7 +101,9 @@ class Server:
 
     async def handle_client(self, client: Client):
         while True:
-            client_message = str((await client.reader.read(255)).decode("utf-8"))
+            client_message = str(
+                (await client.reader.read(255)).decode("utf-8")
+            )
 
             if client_message.startswith("quit"):
                 break
@@ -116,14 +125,47 @@ class Server:
     def handle_client_command(self, client: Client, client_message: str):
         client_message = client_message.replace("\n", "").replace("\r", "")
 
-        if client_message.startswith("/nick"):
+        if client_message.startswith("/NICKNAME"):
             split_client_message = client_message.split(" ")
             if len(split_client_message) >= 2:
                 client.nickname = split_client_message[1]
                 client.writer.write(
-                    f"Nickname changed to: {client.nickname}\n".encode("utf-8")
+                    f"Client name changed to: {client.nickname}\n".encode(
+                        "utf-8"
+                    )
                 )
                 return
+
+        elif client_message.startswith("/ADD"):
+            # Enforces format ADD Order(symbol, LONG/SHORT, quantity, price)
+            split_client_message = client_message.split("(")
+            order_raw_message = split_client_message[1].split(")")[0]
+            order_raw_data = order_raw_message.split(",")
+
+            if len(order_raw_data) == 4:
+                symbol = str(order_raw_data[0])
+                position_type = str(order_raw_data[1])
+                quantity = float(order_raw_data[2])
+                price = float(order_raw_data[3])
+                order = f"({symbol},{position_type},{quantity},{price})\n"
+                hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
+                client.writer.write(f"Adding Order\n {order}".encode("utf-8"))
+                client.writer.write(
+                    f"hex digest: {hexa_digest}\n".encode("utf-8")
+                )
+
+                # TODO
+                # Create orders object
+                # include action of adding order to orders queue
+                # and the hash to specific order
+        elif client_message.startswith("/CANCEL"):
+            pass
+            # TODO
+            # Enforces format DELETE Order(symbol, LONG/SHORT, quantity, price)
+            # User could also provide the hash of the position
+
+    def process_message_with_order():
+        pass
 
     def broadcast_message(self, message: bytes, exclusion_list: list = []):
         for client in self.clients.values():
@@ -133,7 +175,9 @@ class Server:
     def disconnect_client(self, task: asyncio.Task):
         client = self.clients[task]
 
-        self.broadcast_message(f"{client.nickname} left!".encode("utf-8"), [client])
+        self.broadcast_message(
+            f"{client.nickname} left!".encode("utf-8"), [client]
+        )
 
         del self.clients[task]
 
