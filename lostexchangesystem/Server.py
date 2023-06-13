@@ -1,13 +1,17 @@
+from abc import abstractmethod
 import asyncio
 import logging
 import pathlib
 import hashlib
+import queue
 
 # import datetime
 import os
 import sys
-from typing import Dict
+from typing import Dict, Tuple
 from Client import Client
+
+OrderType = str
 
 
 class Server:
@@ -17,6 +21,7 @@ class Server:
         self.__loop = loop
         self.__logger: logging.Logger = self.initialize_logger()
         self.__clients: Dict[asyncio.Task, Client] = {}
+        self.orders_to_send = queue.Queue(maxsize=10)
 
         self.logger.info(f"Server initialized at {self.ip}:{self.port}")
 
@@ -138,34 +143,61 @@ class Server:
 
         elif client_message.startswith("/ADD"):
             # Enforces format ADD Order(symbol, LONG/SHORT, quantity, price)
-            split_client_message = client_message.split("(")
-            order_raw_message = split_client_message[1].split(")")[0]
-            order_raw_data = order_raw_message.split(",")
+            order, is_valid = Server.process_message_with_order(client_message)
 
-            if len(order_raw_data) == 4:
-                symbol = str(order_raw_data[0])
-                position_type = str(order_raw_data[1])
-                quantity = float(order_raw_data[2])
-                price = float(order_raw_data[3])
-                order = f"({symbol},{position_type},{quantity},{price})\n"
+            if is_valid:
                 hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
                 client.writer.write(f"Adding Order\n {order}".encode("utf-8"))
                 client.writer.write(
                     f"hex digest: {hexa_digest}\n".encode("utf-8")
                 )
+                self._add_order_to_queue(order, hexa_digest)
 
                 # TODO
                 # Create orders object
                 # include action of adding order to orders queue
                 # and the hash to specific order
         elif client_message.startswith("/CANCEL"):
-            pass
+            order, is_valid = Server.process_message_with_order(client_message)
+
+            if is_valid:
+                hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
+                client.writer.write(
+                    f"Removing Order\n {order}".encode("utf-8")
+                )
+                client.writer.write(
+                    f"hex digest: {hexa_digest}\n".encode("utf-8")
+                )
+                # self._remove_order_from_queue(order, hexa_digest)
+
             # TODO
             # Enforces format DELETE Order(symbol, LONG/SHORT, quantity, price)
             # User could also provide the hash of the position
 
-    def process_message_with_order():
-        pass
+    def _add_order_to_queue(self, order: OrderType, hexa_digest: str) -> None:
+        # hexa_digest needs to be stored
+        self.orders_to_send.put(order)
+
+    @staticmethod
+    def process_message_with_order(message: str) -> Tuple[OrderType, bool]:
+        # Enforces format ADD Order(symbol, LONG/SHORT, quantity, price)
+        split_client_message = message.split("(")
+        order_raw_message = split_client_message[1].split(")")[0]
+        order_raw_data = order_raw_message.split(",")
+
+        is_valid = False
+        order = "EMPTY"
+
+        if len(order_raw_data) == 4:
+            is_valid = True
+
+            symbol = str(order_raw_data[0])
+            position_type = str(order_raw_data[1])
+            quantity = float(order_raw_data[2])
+            price = float(order_raw_data[3])
+            order = f"({symbol},{position_type},{quantity},{price})\n"
+
+        return order, is_valid
 
     def broadcast_message(self, message: bytes, exclusion_list: list = []):
         for client in self.clients.values():
