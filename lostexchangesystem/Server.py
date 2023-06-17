@@ -21,6 +21,7 @@ class Server:
         self.__loop = loop
         self.__logger: logging.Logger = self.initialize_logger()
         self.__clients: Dict[asyncio.Task, Client] = {}
+        self.__orders_with_hash: Dict[OrderType, str] = {}
         self.orders_to_send = queue.Queue(maxsize=10)
 
         self.logger.info(f"Server initialized at {self.ip}:{self.port}")
@@ -44,6 +45,10 @@ class Server:
     @property
     def clients(self):
         return self.__clients
+
+    @property
+    def orders_with_hash(self):
+        return self.__orders_with_hash
 
     def initialize_logger(self) -> logging.Logger:
         path = pathlib.Path(os.path.join(os.getcwd(), "logs"))
@@ -121,7 +126,7 @@ class Server:
                     f"{client.nickname}: {client_message}".encode("utf-8")
                 )
 
-            self.logger.info(f"{client_message}")
+            self.logger.info(f"raw message - {client_message}")
 
             await client.writer.drain()
 
@@ -151,24 +156,23 @@ class Server:
                 client.writer.write(
                     f"hex digest: {hexa_digest}\n".encode("utf-8")
                 )
+                self._add_order_with_hash(order, hexa_digest)
                 self._add_order_to_queue(order, hexa_digest)
 
-                # TODO
-                # Create orders object
-                # include action of adding order to orders queue
-                # and the hash to specific order
+            # TODO: create Orders object O(1) operations
         elif client_message.startswith("/CANCEL"):
-            order, is_valid = Server.process_message_with_order(client_message)
+            order_hash = Server.process_message_with_hash(client_message)
+            order, is_valid = self._remove_order_with_hash(order_hash)
 
             if is_valid:
-                hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
+                # hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
                 client.writer.write(
                     f"Removing Order\n {order}".encode("utf-8")
                 )
-                client.writer.write(
-                    f"hex digest: {hexa_digest}\n".encode("utf-8")
-                )
-                # self._remove_order_from_queue(order, hexa_digest)
+                # client.writer.write(
+                #     f"hex digest: {hexa_digest}\n".encode("utf-8")
+                # )
+                # self._remove_order_from_queue(order, order_hash)
 
             # TODO
             # Enforces format DELETE Order(symbol, LONG/SHORT, quantity, price)
@@ -177,6 +181,25 @@ class Server:
     def _add_order_to_queue(self, order: OrderType, hexa_digest: str) -> None:
         # hexa_digest needs to be stored
         self.orders_to_send.put(order)
+        self.logger.info("Added order to queue")
+
+    def _remove_order_from_queue(
+        self, order: OrderType, hexa_digest: str
+    ) -> None:
+        self.orders_to_send.get()
+
+    @staticmethod
+    def process_message_with_hash(message: str) -> str:
+        # Assumes format CANCEL Order(hash)
+        split_client_message = message.split("(")
+        hash_raw_message = split_client_message[1].split(")")[0]
+
+        order_hash = ""
+
+        if len(hash_raw_message) == 1:
+            order_hash = hash_raw_message
+
+        return order_hash
 
     @staticmethod
     def process_message_with_order(message: str) -> Tuple[OrderType, bool]:
@@ -196,6 +219,20 @@ class Server:
             quantity = float(order_raw_data[2])
             price = float(order_raw_data[3])
             order = f"({symbol},{position_type},{quantity},{price})\n"
+
+        return order, is_valid
+
+    def _add_order_with_hash(self, order: OrderType, order_hash: str) -> None:
+        self.orders_with_hash[order_hash] = order
+
+    def _remove_order_with_hash(
+        self, order_hash: str
+    ) -> Tuple[OrderType, bool]:
+        is_valid = True
+        order = ""
+        if order_hash in self.orders_with_hash.keys():
+            is_valid = True
+            order = self.orders_with_hash[order_hash]
 
         return order, is_valid
 
