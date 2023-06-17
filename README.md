@@ -1,3 +1,6 @@
+![CodeBase](https://progress-bar.dev/20/?title=Codebase)
+![MIT](https://img.shields.io/badge/License-MIT-green)
+![Black](https://img.shields.io/badge/Style-Black-black)
 # LostExchangeSystem
 A Lost Stock Exchange System trying to find its way back!
 
@@ -33,4 +36,9 @@ A (fast) limit order book must implement three primary functions.
  *what are the best bid and offer?* or *what is order x's current position?*.
 
 
+# Python style
+- [Black](https://github.com/psf/black)
+- [PEP8](https://peps.python.org/pep-0008/)
+- [Google Python Style](https://google.github.io/styleguide/pyguide.html)
 
+Under MIT License
