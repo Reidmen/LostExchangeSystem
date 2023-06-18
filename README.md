@@ -3,6 +3,38 @@
 ![Black](https://img.shields.io/badge/Style-Black-black)
 # LostExchangeSystem
 A Lost Stock Exchange System trying to find its way back!
+Implements a Server/Client protocol for creating orders and storing them in an efficient way.
+As a toy example, its purpose is for learning the mechanism of book keeping.
+
+## Run Server 
+In `examples/strategies/` you can find existing strategies. To execute `MovingAveragesCrossStrategy`, use:
+```shell
+cd examples/
+python3 strategies/MovingAveragesCrossStrategy.py
+```
+
+## Interaction
+We assume the server is running in the local host `127.0.0.1` and port `10001`.
+In order to interact with the server, use:
+```shell
+nc 127.0.0.1 10001
+```
+
+### Add Orders
+Orders can be added to the queue by using the add method.
+To add an order, e.g. 10 long on APPL at strike price $130, use:
+```shell
+/ADD Order(APPL, LONG, 10, 130.0) 
+```
+
+The server will prompt a digested hash of the order information, useful to cancel it.
+
+### Cancel Orders 
+Order can be removed from the queue by using the cancel method.
+To cancel an order its enough to specify the hash, use (example hash):
+```shell
+/CANCEL Order(0ecbb9115ef1380b2f7194f84d38a776)
+```
 
 ## Ideas
 
