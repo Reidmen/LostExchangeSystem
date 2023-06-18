@@ -1,0 +1,28 @@
+# Using PEP 621 for setup, no backwards compatibility
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["lostexchangesystem"]
+
+[project]
+name = "lostexchangesystem"
+authors = [
+    {name = "Reidmen Arostica", email = "r.rethmawn@gmail.com"},
+]
+description = """
+LostExchangeSystem implements a basic Client/Server Interaction
+to add orders into a Market, within the context of trading stocks,
+options or any other future.
+"""
+readme = "README.md"
+requies-python = ">=3.8"
+license = {text = "MIT License"}
+classifiers = [
+    "Programming Language :: Python :: 3"
+]
+dependencies = [
+    "hashlib",
+]
+dynamic = ["version"]
