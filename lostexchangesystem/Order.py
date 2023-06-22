@@ -35,18 +35,38 @@ class OrderBase(ABC):
         pass
 
 
-class Order(OrderBase):
+class OrderNode:
+    def __init__(
+        self,
+        order_id: int = 0,
+        previous_item=None,
+        next_item=None,
+        count: int = 0,
+    ) -> None:
+        self.order_id = order_id
+        self.previous_item = previous_item
+        self.next_item = next_item
+        self.count = count
+
+    def __len__(self) -> int:
+        return self.count
+
+    def __repr__(self) -> str:
+        return f"OrderNode({self.count})"
+
+
+class Order:
     """Double-Linked list order item."""
 
     def __init__(
         self,
-        order_id: str = "",
+        order_id: int = 0,
         is_bid: bool = False,
         size: float = 0.0,
         price: float = 0.0,
-        root: OrderBase | None = None,
-        next_item: OrderBase | None = None,
-        previous_item: OrderBase | None = None,
+        root: OrderNode = OrderNode(),
+        next_item: OrderNode = OrderNode(),
+        previous_item: OrderNode = OrderNode(),
     ) -> None:
         """Initializes order as open, and defines basic attributes
         such as id, is_buy, status and time_enforcement."""
@@ -63,6 +83,10 @@ class Order(OrderBase):
         self.next_item = next_item
         self.previous_item = previous_item
 
+        self.order_node = OrderNode(
+            order_id=order_id, previous_item=previous_item, next_item=next_item
+        )
+
     @property
     def order_id(self):
         return self.__order_id
@@ -75,15 +99,15 @@ class Order(OrderBase):
     def size(self):
         return self.__size
 
-    def append(self, order: OrderBase) -> None:
-        """Append an order object"""
-        if self._next_item is None:
+    def append(self, order: OrderNode) -> None:
+        """Append an order node object"""
+        if self.next_item is None:
             self.next_item = order
-            self.next_item.previous_item = self
-            self.next_item.root = self.root
+            self.next_item.previous_item = self.order_node
+            # self.next_item.root = self.root
 
             self.root.count += 1
-            self.root.tail = order
+            self.root.previous_item = order
 
 
 class SellOrderWithLimit(OrderBase):
