@@ -64,9 +64,8 @@ class Order:
         is_bid: bool = False,
         size: float = 0.0,
         price: float = 0.0,
-        root: OrderNode = OrderNode(),
-        next_item: OrderNode = OrderNode(),
-        previous_item: OrderNode = OrderNode(),
+        head: OrderNode = OrderNode(),
+        tail: OrderNode = OrderNode(),
     ) -> None:
         """Initializes order as open, and defines basic attributes
         such as id, is_buy, status and time_enforcement."""
@@ -79,12 +78,13 @@ class Order:
         self.__started_time = datetime.now()
         self.__closed_time = None
 
-        self.root = root
-        self.next_item = next_item
-        self.previous_item = previous_item
+        self.head = head
+        self.tail = tail
 
         self.order_node = OrderNode(
-            order_id=order_id, previous_item=previous_item, next_item=next_item
+            order_id=order_id,
+            previous_item=head.previous_item,
+            next_item=head.next_item,
         )
 
     @property
@@ -99,15 +99,38 @@ class Order:
     def size(self):
         return self.__size
 
-    def append(self, order: OrderNode) -> None:
-        """Append an order node object"""
-        if self.next_item is None:
-            self.next_item = order
-            self.next_item.previous_item = self.order_node
-            # self.next_item.root = self.root
+    def insert_front(self, order: OrderNode) -> None:
+        """Insert order at the front of the linked list"""
+        order.next_item = self.head
 
-            self.root.count += 1
-            self.root.previous_item = order
+        if self.head is not None:
+            self.head.previous_item = order
+
+            self.head.count += 1
+
+        self.head = order
+
+    def insert_end(self, order: OrderNode) -> None:
+        """Insert order at the end of the linked list"""
+        order.previous_item = self.tail
+
+        if self.tail is not None:
+            self.tail.next_item = order
+
+            self.head.count += 1
+
+        self.tail = order
+
+    def insert_after(self, prev_order: OrderNode, order: OrderNode) -> None:
+        if prev_order.order_id is None:
+            return None
+
+        order.next_item = prev_order.next_item
+        prev_order.next_item = order
+        order.previous_item = prev_order
+
+        if order.next_item:
+            order.next_item.previous_item = order
 
 
 class SellOrderWithLimit(OrderBase):
