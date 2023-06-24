@@ -89,6 +89,10 @@ class Order:
         )
 
     @property
+    def price(self):
+        return self.__price
+
+    @property
     def order_id(self):
         return self.__order_id
 
@@ -148,13 +152,21 @@ class Order:
 
         gc.collect()
 
-    def display_linked_list(self, order: OrderNode) -> str:
+    def pretty_print(self, order: OrderNode) -> str:
         display_str = ""
         while order:
             display_str += order.__str__() + "->"
             order = order.next_item
 
         return display_str
+
+    def __repr__(self) -> str:
+        return (
+            f"Order({self.order_id}, {self.is_bid}, {self.price}, {self.size})"
+        )
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
 
 class SellOrderWithLimit(OrderBase):
