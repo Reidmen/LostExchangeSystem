@@ -6,6 +6,7 @@ create, edit and cancel orders.
 from abc import ABC, abstractmethod
 from datetime import datetime
 from Constants import OrderStatus, OrderType, TimeEnforcementType
+import gc
 
 
 class OrderBase(ABC):
@@ -131,6 +132,29 @@ class Order:
 
         if order.next_item:
             order.next_item.previous_item = order
+
+    def delete(self, order: OrderNode) -> None:
+        if self.head is None or order is None:
+            return None
+
+        if self.head == order:
+            self.head = order.next_item
+
+        if order.next_item is not None:
+            order.next_item.previous_item = order.previous_item
+
+        if order.previous_item is not None:
+            order.previous_item.next_item = order.next_item
+
+        gc.collect()
+
+    def display_linked_list(self, order: OrderNode) -> str:
+        display_str = ""
+        while order:
+            display_str += order.__str__() + "->"
+            order = order.next_item
+
+        return display_str
 
 
 class SellOrderWithLimit(OrderBase):
