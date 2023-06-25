@@ -40,8 +40,8 @@ To cancel an order its enough to specify the hash, use (example hash):
 
 * Introduce the Account, Member and Order classes that define a brokage system.
 * Use python for high-level implementation of them. 
-* Overview of the Exchange system is provided in the `src/` folder.
-* Implementation will be done in c++ or rust (to be decided soon), specially for the low-latency cases.
+* Overview of the Exchange system is provided in the `lostexchangesystem/` folder.
+* Use c++ for implementation of the order book, and pybind11 for python usage.
 * Other attempts will be given in `ideas/` folder.
 
 

@@ -17,12 +17,15 @@ to add orders into a Market, within the context of trading stocks,
 options or any other future.
 """
 readme = "README.md"
-requies-python = ">=3.8"
+requires-python = ">=3.8"
 license = {text = "MIT License"}
 classifiers = [
-    "Programming Language :: Python :: 3"
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Build Tools"
 ]
 dependencies = [
-    "hashlib",
 ]
-dynamic = ["version"]
+
+version = "0.0.1"
+
