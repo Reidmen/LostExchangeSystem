@@ -1,52 +1,39 @@
 #ifndef CUSTOMS_H
 #define CUSTOMS_H
 
-struct OrderNode {
-    struct OrderNode *prev;
-    struct OrderNode *next;
-    char32_t *id;
-};
-
-struct LimitNode {
-    struct LimitNode *parent;
-    struct LimitNode *leftChild;
-    struct LimitNode *rightChild;
-};
-
-typedef OrderNode OrderNode;
-typedef LimitNode LimitNode;
-
-struct Order {
-    char32_t *id;
+#include <memory>
+typedef struct Order {
+    std::shared_ptr<char32_t> id;
     unsigned buyOrSell;
     double shares;
-    OrderNode *orderNode;
-    LimitNode *parentLimit;
-};
-
-struct Limit {
-    double limitPrice;
     double price;
+    double limit;
+    std::shared_ptr<struct Order> nextOrder;
+    std::shared_ptr<struct Order> prevOrder;
+    std::shared_ptr<struct Limit> parentLimit;
+} Order;
+
+typedef struct Limit {
+    double limitPrice;
+    double size;
     double totalVolume;
     int orderCount;
-    LimitNode *limitNode;
-    Order *headOrder;
-    Order *tailOrder;
-};
+    std::shared_ptr<Limit> parent;
+    std::shared_ptr<Limit> leftChild;
+    std::shared_ptr<Limit> rightChild;
+    std::shared_ptr<Order> headOrder;
+    std::shared_ptr<Order> tailOrder;
+} Limit;
 
-typedef Limit Limit;
+typedef struct QueueItem {
+    std::shared_ptr<Limit> limit;
+    struct QueueItem *prevItem;
+} QueueItem;
 
-struct QueueItem {
-    Limit *limit;
-    struct QueueItem *previous;
-};
-
-typedef QueueItem QueueItem;
-
-struct Queue {
+typedef struct Queue {
     int size;
-    QueueItem *head;
-    QueueItem *tail;
-};
+    std::shared_ptr<QueueItem> head;
+    std::shared_ptr<QueueItem> tail;
+} Queue;
 
 #endif
