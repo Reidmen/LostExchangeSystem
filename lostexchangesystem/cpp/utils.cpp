@@ -51,3 +51,39 @@ int limitExists(std::shared_ptr<Limit> root, std::shared_ptr<Limit> limit) {
     }
     return 1;
 };
+
+int hasGrandparent(std::shared_ptr<Limit> limit) {
+    // check if there is a parent to the passed limit
+    if (limit->parent != NULL && limit->parent->parent != NULL) {
+        return 1;
+    } else {
+        return 0;
+    }
+};
+
+bool limitIsRoot(std::shared_ptr<Limit> limit) {
+    // check if the given limit is the root
+    if (limit->parent == NULL) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+std::shared_ptr<Limit> getMinimumLimit(std::shared_ptr<Limit> limit) {
+    // return the left-most limit struct from the limit
+    std::shared_ptr<Limit> ptr_minimum;
+
+    if (limitIsRoot(limit)) {
+        ptr_minimum = limit->leftChild;
+    } else {
+        ptr_minimum = limit;
+    }
+
+    while (ptr_minimum->leftChild != NULL) {
+        ptr_minimum = ptr_minimum->leftChild;
+    }
+
+    return (ptr_minimum);
+};
+
