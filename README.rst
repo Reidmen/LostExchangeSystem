@@ -1,4 +1,4 @@
-![CodeBase](https://progress-bar.dev/20/?title=Codebase)
+![CodeBase](https://progress-bar.dev/21/?title=Codebase)
 ![MIT](https://img.shields.io/badge/License-MIT-green)
 ![Black](https://img.shields.io/badge/Style-Black-black)
 # LostExchangeSystem
@@ -7,10 +7,11 @@ Implements a Server/Client protocol for creating orders and storing them in an e
 As a toy example, its purpose is for learning the mechanism of book keeping.
 
 ## Run Server 
-In `examples/strategies/` you can find existing strategies. To execute `MovingAveragesCrossStrategy`, use:
+To run a server, you must specify the host ip address and the port. To execute it
+on the localhost `127.0.0.1` with port `10001`, use:
 ```shell
-cd examples/
-python3 strategies/MovingAveragesCrossStrategy.py
+cd lostexchangesystem/
+python3 Server.py 127.0.0.1 10001 
 ```
 
 ## Interaction
