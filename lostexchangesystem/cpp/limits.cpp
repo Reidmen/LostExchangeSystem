@@ -1,3 +1,5 @@
+#include "limits.hpp"
+
 #include <math.h>
 
 #include <memory>
@@ -53,9 +55,9 @@ int addLimit(std::shared_ptr<Limit> root, std::shared_ptr<Limit> limit) {
     return 0;
 }
 
-
-void replaceLimitInParent(std::shared_ptr<Limit> limit, std::shared_ptr<Limit> newLimit) {
-    // pop the given limit and replace all pointers to it from limit->parent 
+void replaceLimitInParent(std::shared_ptr<Limit> limit,
+                          std::shared_ptr<Limit> newLimit) {
+    // pop the given limit and replace all pointers to it from limit->parent
     // to the newLimit
     if (!limitIsRoot(limit)) {
         if (limit == limit->parent->leftChild && !limitIsRoot(limit->parent)) {
@@ -71,7 +73,7 @@ void replaceLimitInParent(std::shared_ptr<Limit> limit, std::shared_ptr<Limit> n
 
 int removeLimit(std::shared_ptr<Limit> limit) {
     // remove the given limit from the tree it belongs to
-    // It assumes it is part of the tree 
+    // It assumes it is part of the tree
     if (!hasGrandparent(limit) && limitIsRoot(limit)) {
         return 0;
     }
@@ -83,7 +85,7 @@ int removeLimit(std::shared_ptr<Limit> limit) {
         std::shared_ptr<Limit> parent = ptr_successor->parent;
         std::shared_ptr<Limit> leftChild = ptr_successor->leftChild;
         std::shared_ptr<Limit> rightChild = ptr_successor->rightChild;
-        
+
         if (limit->leftChild != ptr_successor) {
             ptr_successor->leftChild = limit->leftChild;
         } else {
@@ -92,8 +94,7 @@ int removeLimit(std::shared_ptr<Limit> limit) {
 
         if (limit->rightChild != ptr_successor) {
             ptr_successor->rightChild = limit->rightChild;
-        }
-        else {
+        } else {
             ptr_successor->rightChild = NULL;
         }
 
@@ -108,7 +109,6 @@ int removeLimit(std::shared_ptr<Limit> limit) {
         }
         limit->parent = parent;
 
-
         removeLimit(parent);
 
     } else if (limit->leftChild != NULL && limit->rightChild == NULL) {
@@ -116,7 +116,7 @@ int removeLimit(std::shared_ptr<Limit> limit) {
         replaceLimitInParent(limit, limit->leftChild);
     } else if (limit->rightChild != NULL && limit->leftChild == NULL) {
         // limit has only right child
-        replaceLimitInParent(limit, limit->rightChild); 
+        replaceLimitInParent(limit, limit->rightChild);
     } else {
         // limit has no children
         replaceLimitInParent(limit, NULL);

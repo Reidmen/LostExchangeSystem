@@ -1,9 +1,10 @@
 #include <memory>
 
 #include "customs.hpp"
+#include "utils.hpp"
 
 void initializeOrder(std::shared_ptr<Order> order) {
-    order->id = NULL;
+    order->id = "";
     order->buyOrSell = -1;
     order->shares = 0;
     order->limit = 0;
