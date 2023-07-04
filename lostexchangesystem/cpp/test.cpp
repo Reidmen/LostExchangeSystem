@@ -4,9 +4,8 @@
 #include <memory>
 
 #include "customs.hpp"
-#include "limits.hpp"
+#include "limits.cpp"
 #include "orders.cpp"
-#include "utils.cpp"
 
 // convenient functions for testing
 // TODO remove utils depedency with an adequate header
@@ -37,6 +36,14 @@ std::shared_ptr<Limit> createDummyTree(std::shared_ptr<Limit> dummyA,
     assert(statusCode == 1);
 }
 
+// assert equality of Order structure variables
+void AssertPtrOrder(std::shared_ptr<Order> ptr_firstOrder,
+                    std::shared_ptr<Order> ptr_secondOrder) {
+    assert(ptr_firstOrder->shares == ptr_secondOrder->shares);
+    assert(ptr_firstOrder->price == ptr_secondOrder->price);
+    assert(ptr_firstOrder->limit == ptr_secondOrder->limit);
+}
+
 // asserting on equality on the Limit structures
 void AssertPtrLimit(std::shared_ptr<Limit> ptr_firstLimit,
                     std::shared_ptr<Limit> ptr_secondLimit) {
@@ -46,13 +53,6 @@ void AssertPtrLimit(std::shared_ptr<Limit> ptr_firstLimit,
     assert(ptr_firstLimit->orderCount == ptr_secondLimit->orderCount);
     AssertPtrOrder(ptr_firstLimit->headOrder, ptr_secondLimit->headOrder);
     AssertPtrOrder(ptr_firstLimit->tailOrder, ptr_secondLimit->tailOrder);
-}
-
-void AssertPtrOrder(std::shared_ptr<Order> ptr_firstOrder,
-                    std::shared_ptr<Order> ptr_secondOrder) {
-    assert(ptr_firstOrder->shares == ptr_secondOrder->shares);
-    assert(ptr_firstOrder->price == ptr_secondOrder->price);
-    assert(ptr_firstOrder->limit == ptr_secondOrder->limit);
 }
 
 // test dummy tree

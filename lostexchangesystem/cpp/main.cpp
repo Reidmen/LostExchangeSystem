@@ -1,5 +1,5 @@
 #include "customs.hpp"
-#include "test.hpp"
+#include "test.cpp"
 
 int main(int argc, char* argv[]) {
     TestCreateDummyTree();
