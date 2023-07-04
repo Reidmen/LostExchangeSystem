@@ -2,8 +2,9 @@
 #define CUSTOMS_H
 
 #include <memory>
+#include <string>
 typedef struct Order {
-    std::shared_ptr<char32_t> id;
+    std::string id;
     unsigned buyOrSell;
     double shares;
     double price;
