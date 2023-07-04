@@ -3,7 +3,7 @@
 #include <cassert>
 #include <memory>
 
-#include "customs.hpp"
+// #include "customs.hpp"
 #include "limits.cpp"
 #include "orders.cpp"
 
@@ -34,6 +34,8 @@ std::shared_ptr<Limit> createDummyTree(std::shared_ptr<Limit> dummyA,
     assert(statusCode == 1);
     statusCode = addLimit(ptr_root, dummyD);
     assert(statusCode == 1);
+
+    return (ptr_root);
 }
 
 // assert equality of Order structure variables
@@ -133,3 +135,69 @@ void TestOrderPushing() {
     assert(ptr_limit->size == 30.0);
     assert(ptr_limit->orderCount == 2);
 }
+
+void TestOrderPopping() {
+    auto ptr_limit = std::make_shared<Limit>();
+    initializeLimit(ptr_limit);
+    ptr_limit->limitPrice = 1000.0;
+
+    auto ptr_newOrderA = std::make_shared<Order>();
+    initializeOrder(ptr_newOrderA);
+    ptr_newOrderA->limit = 1000.0;
+    ptr_newOrderA->shares = 10;
+    ptr_newOrderA->buyOrSell = 0;
+    ptr_newOrderA->id = "1234";
+
+    auto ptr_newOrderB = std::make_shared<Order>();
+    initializeOrder(ptr_newOrderB);
+    ptr_newOrderB->limit = 1000.0;
+    ptr_newOrderB->shares = 20;
+    ptr_newOrderB->buyOrSell = 0;
+    ptr_newOrderB->id = "1235";
+
+    auto ptr_newOrderC = std::make_shared<Order>();
+    initializeOrder(ptr_newOrderC);
+    ptr_newOrderC->limit = 1000.0;
+    ptr_newOrderC->shares = 30;
+    ptr_newOrderC->buyOrSell = 0;
+    ptr_newOrderC->id = "1236";
+
+    // push all orders into the limit tree
+    pushOrder(ptr_limit, ptr_newOrderA);
+    pushOrder(ptr_limit, ptr_newOrderB);
+    pushOrder(ptr_limit, ptr_newOrderC);
+
+    // pop all orders and check that references are updated
+    auto ptr_poppedOrder = std::make_shared<Order>();
+    ptr_poppedOrder = popOrder(ptr_limit);
+
+    // 1st pop must be ptr to order A
+    AssertPtrOrder(ptr_newOrderA, ptr_poppedOrder);
+    // assert references are correctly updated
+    AssertPtrOrder(ptr_newOrderC, ptr_limit->headOrder);
+    AssertPtrOrder(ptr_newOrderB, ptr_limit->tailOrder);
+    AssertPtrOrder(ptr_newOrderC, ptr_limit->tailOrder->prevOrder);
+    AssertPtrOrder(ptr_newOrderB, ptr_limit->headOrder->nextOrder);
+
+    assert(ptr_limit->tailOrder->nextOrder == NULL);
+    assert(ptr_limit->headOrder->prevOrder == NULL);
+
+    // assert quantities
+    assert(ptr_limit->totalVolume == 50000.0);
+    assert(ptr_limit->size == 50.0);
+    assert(ptr_limit->orderCount == 2);
+
+    // 2nd pop
+    ptr_poppedOrder = popOrder(ptr_limit);
+    AssertPtrOrder(ptr_newOrderB, ptr_poppedOrder);
+    // assert references are correctly updated
+    AssertPtrOrder(ptr_newOrderC, ptr_limit->headOrder);
+    AssertPtrOrder(ptr_newOrderC, ptr_limit->tailOrder);
+    assert(ptr_newOrderC->prevOrder == NULL);
+    assert(ptr_newOrderC->nextOrder == NULL);
+
+    // assert attributes
+    assert(ptr_limit->totalVolume == 30000.0);
+    assert(ptr_limit->size == 30.0);
+    assert(ptr_limit->orderCount == 1);
+};
