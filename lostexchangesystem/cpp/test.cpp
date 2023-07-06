@@ -200,4 +200,21 @@ void TestOrderPopping() {
     assert(ptr_limit->totalVolume == 30000.0);
     assert(ptr_limit->size == 30.0);
     assert(ptr_limit->orderCount == 1);
+
+    // 3rd pop
+    ptr_poppedOrder = popOrder(ptr_limit);
+    AssertPtrOrder(ptr_newOrderC, ptr_poppedOrder);
+
+    // assert references
+    assert(ptr_limit->headOrder == NULL);
+    assert(ptr_limit->tailOrder == NULL);
+
+    // assert attributes values
+    assert(ptr_limit->totalVolume == 0.0);
+    assert(ptr_limit->size == 0.0);
+    assert(ptr_limit->orderCount == 0);
+
+    // 4th pop
+    ptr_poppedOrder = popOrder(ptr_limit);
+    assert(ptr_poppedOrder == NULL);
 };
