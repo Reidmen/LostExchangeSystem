@@ -1,8 +1,8 @@
 #include "test.hpp"
 
 #include <cassert>
-#include <memory>
 #include <iostream>
+#include <memory>
 // #include "customs.hpp"
 #include "limits.cpp"
 #include "orders.cpp"
@@ -28,7 +28,6 @@ std::shared_ptr<Limit> createDummyTree(std::shared_ptr<Limit> dummyA,
     auto ptr_root = createRoot();
     statusCode = addLimit(ptr_root, dummyA);
     assert(statusCode == 1);
-    std::cout << "Status code assertion passed" << std::endl;
     statusCode = addLimit(ptr_root, dummyB);
     assert(statusCode == 1);
     statusCode = addLimit(ptr_root, dummyC);
@@ -54,8 +53,16 @@ void AssertPtrLimit(std::shared_ptr<Limit> ptr_firstLimit,
     assert(ptr_firstLimit->size == ptr_secondLimit->size);
     assert(ptr_firstLimit->totalVolume == ptr_secondLimit->totalVolume);
     assert(ptr_firstLimit->orderCount == ptr_secondLimit->orderCount);
-    AssertPtrOrder(ptr_firstLimit->headOrder, ptr_secondLimit->headOrder);
-    AssertPtrOrder(ptr_firstLimit->tailOrder, ptr_secondLimit->tailOrder);
+
+    if (ptr_firstLimit->headOrder != NULL &&
+        ptr_secondLimit->headOrder != NULL) {
+        AssertPtrOrder(ptr_firstLimit->headOrder, ptr_secondLimit->headOrder);
+    }
+
+    if (ptr_firstLimit->tailOrder != NULL &&
+        ptr_secondLimit->tailOrder != NULL) {
+        AssertPtrOrder(ptr_firstLimit->tailOrder, ptr_secondLimit->tailOrder);
+    }
 }
 
 // test dummy tree
@@ -67,12 +74,10 @@ void TestCreateDummyTree() {
 
     std::shared_ptr<Limit> ptr_root =
         createDummyTree(ptr_limitA, ptr_limitB, ptr_limitC, ptr_limitD);
-    
+
     // TODO assert equality of pointers information between tree and limits
     AssertPtrLimit(ptr_limitA, ptr_root->rightChild);
-    std::cout << "Asserting on the dummy tree limit" << std::endl;
     AssertPtrLimit(ptr_limitC, ptr_limitA->leftChild);
-    std::cout << "Asserting on the dummy tree limit" << std::endl;
     std::cout << "Assertions on TestCreateDummyTree passed" << std::endl;
 }
 
@@ -80,7 +85,7 @@ void TestCreateDummyTree() {
 void TestOrderPushing() {
     // pushes an order to an empty limit
     // checks that head and tail point to it
-    std::shared_ptr<Limit> ptr_limit = createDummyLimit(1000.0); 
+    std::shared_ptr<Limit> ptr_limit = createDummyLimit(1000.0);
 
     auto ptr_newOrderA = std::make_shared<Order>();
 
