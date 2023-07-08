@@ -2,13 +2,13 @@
 
 #include <cassert>
 #include <memory>
-
+#include <iostream>
 // #include "customs.hpp"
 #include "limits.cpp"
 #include "orders.cpp"
 
 // convenient functions for testing
-// TODO remove utils depedency with an adequate header
+// TODO remove utils depedency with a better header
 
 // creates limit struct pointer
 std::shared_ptr<Limit> createDummyLimit(float price) {
@@ -28,6 +28,7 @@ std::shared_ptr<Limit> createDummyTree(std::shared_ptr<Limit> dummyA,
     auto ptr_root = createRoot();
     statusCode = addLimit(ptr_root, dummyA);
     assert(statusCode == 1);
+    std::cout << "Status code assertion passed" << std::endl;
     statusCode = addLimit(ptr_root, dummyB);
     assert(statusCode == 1);
     statusCode = addLimit(ptr_root, dummyC);
@@ -66,17 +67,20 @@ void TestCreateDummyTree() {
 
     std::shared_ptr<Limit> ptr_root =
         createDummyTree(ptr_limitA, ptr_limitB, ptr_limitC, ptr_limitD);
-
+    
     // TODO assert equality of pointers information between tree and limits
     AssertPtrLimit(ptr_limitA, ptr_root->rightChild);
+    std::cout << "Asserting on the dummy tree limit" << std::endl;
     AssertPtrLimit(ptr_limitC, ptr_limitA->leftChild);
+    std::cout << "Asserting on the dummy tree limit" << std::endl;
+    std::cout << "Assertions on TestCreateDummyTree passed" << std::endl;
 }
 
 // test on pushing
 void TestOrderPushing() {
     // pushes an order to an empty limit
     // checks that head and tail point to it
-    std::shared_ptr<Limit> ptr_limit = createDummyLimit(100.0);
+    std::shared_ptr<Limit> ptr_limit = createDummyLimit(1000.0); 
 
     auto ptr_newOrderA = std::make_shared<Order>();
 
@@ -101,7 +105,7 @@ void TestOrderPushing() {
     AssertPtrLimit(ptr_limit, ptr_limit->tailOrder->parentLimit);
 
     // assert attributes of limits are correctly updated
-    assert(ptr_limit->totalVolume == 1000.0);
+    assert(ptr_limit->totalVolume == 10000.0);
     assert(ptr_limit->size == 10.0);
     assert(ptr_limit->orderCount == 1);
     // update counters on scope
@@ -113,17 +117,17 @@ void TestOrderPushing() {
     auto ptr_newOrderB = std::make_shared<Order>();
 
     initializeOrder(ptr_newOrderB);
-    ptr_newOrderA->limit = 1000.0;
-    ptr_newOrderA->shares = 20;
-    ptr_newOrderA->buyOrSell = 0;
-    ptr_newOrderA->id = "1235";
+    ptr_newOrderB->limit = 1000.0;
+    ptr_newOrderB->shares = 20;
+    ptr_newOrderB->buyOrSell = 0;
+    ptr_newOrderB->id = "1235";
 
     returnCode = pushOrder(ptr_limit, ptr_newOrderB);
+    assert(returnCode == 1);
 
     // assert references are correctly updated
     AssertPtrOrder(ptr_newOrderB, ptr_limit->headOrder);
     AssertPtrOrder(ptr_newOrderA, ptr_limit->tailOrder);
-    AssertPtrLimit(ptr_limit, ptr_limit->tailOrder->parentLimit);
     AssertPtrLimit(ptr_limit, ptr_limit->tailOrder->parentLimit);
     AssertPtrOrder(ptr_newOrderA, ptr_limit->headOrder->nextOrder);
     assert(ptr_limit->headOrder->prevOrder == NULL);
@@ -131,9 +135,10 @@ void TestOrderPushing() {
     // assert ptr equality
     assert(ptr_newOrderB == ptr_limit->tailOrder->prevOrder);
     // assert attributes of limits are correctly updated
-    assert(ptr_limit->totalVolume == 3000.0);
+    assert(ptr_limit->totalVolume == 30000.0);
     assert(ptr_limit->size == 30.0);
     assert(ptr_limit->orderCount == 2);
+    std::cout << "Assertions on TestOrderPushing passed" << std::endl;
 }
 
 void TestOrderPopping() {
@@ -217,4 +222,5 @@ void TestOrderPopping() {
     // 4th pop
     ptr_poppedOrder = popOrder(ptr_limit);
     assert(ptr_poppedOrder == NULL);
+    std::cout << "Assertions on TestOrderPopping passed" << std::endl;
 };

@@ -13,6 +13,8 @@ std::shared_ptr<Limit> createRoot() {
     std::shared_ptr<Limit> ptr_limit = std::make_shared<Limit>();
     initializeLimit(ptr_limit);
     ptr_limit->limitPrice = -INFINITY;
+
+    return ptr_limit;
 }
 
 int addLimit(std::shared_ptr<Limit> root, std::shared_ptr<Limit> limit) {
