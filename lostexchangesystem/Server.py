@@ -1,14 +1,12 @@
-from abc import abstractmethod
 import asyncio
 import logging
 import pathlib
 import hashlib
-import queue
 
 # import datetime
+from typing import Tuple
 import os
 import sys
-from typing import Dict, Tuple
 from Client import Client
 
 OrderType = str
@@ -20,9 +18,9 @@ class Server:
         self.__port = port
         self.__loop = loop
         self.__logger: logging.Logger = self.initialize_logger()
-        self.__clients: Dict[asyncio.Task, Client] = {}
-        self.__orders_with_hash: Dict[OrderType, str] = {}
-        self.orders_to_send = queue.Queue(maxsize=10)
+        self.__clients: dict[asyncio.Task, Client] = {}
+        self.__orders_with_hash: dict[OrderType, str] = {}
+        self.orders_to_send = asyncio.Queue(maxsize=100)
 
         self.logger.info(f"Server initialized at {self.ip}:{self.port}")
 
@@ -119,7 +117,7 @@ class Server:
                 break
 
             elif client_message.startswith("/"):
-                self.handle_client_command(client, client_message)
+                await self.handle_client_command(client, client_message)
 
             else:
                 self.broadcast_message(
@@ -132,7 +130,7 @@ class Server:
 
         self.logger.info("Client Disconnected")
 
-    def handle_client_command(self, client: Client, client_message: str):
+    async def handle_client_command(self, client: Client, client_message: str):
         client_message = client_message.replace("\n", "").replace("\r", "")
 
         if client_message.startswith("/NICKNAME"):
@@ -147,7 +145,7 @@ class Server:
                 return
 
         elif client_message.startswith("/ADD"):
-            # Enforces format ADD Order(symbol, LONG/SHORT, quantity, price)
+            # Expect ADD Order(symbol, LONG/SHORT, quantity, price)
             order, is_valid = Server.process_message_with_order(client_message)
 
             if is_valid:
@@ -157,10 +155,11 @@ class Server:
                     f"hex digest: {hexa_digest}\n".encode("utf-8")
                 )
                 self._add_order_with_hash(order, hexa_digest)
-                self._add_order_to_queue(order, hexa_digest)
+                await self._add_order_to_queue(order, hexa_digest)
 
             # TODO: create Orders object O(1) operations
         elif client_message.startswith("/CANCEL"):
+            # Expect CANCEL Order(hash)
             order_hash = Server.process_message_with_hash(client_message)
             order, is_valid = self._remove_order_with_hash(order_hash)
 
@@ -169,24 +168,19 @@ class Server:
                 client.writer.write(
                     f"Removing Order\n {order}".encode("utf-8")
                 )
-                # client.writer.write(
-                #     f"hex digest: {hexa_digest}\n".encode("utf-8")
-                # )
-                # self._remove_order_from_queue(order, order_hash)
+                await self._remove_order_from_queue(order, order_hash)
 
-            # TODO
-            # Enforces format DELETE Order(symbol, LONG/SHORT, quantity, price)
-            # User could also provide the hash of the position
-
-    def _add_order_to_queue(self, order: OrderType, hexa_digest: str) -> None:
-        # hexa_digest needs to be stored
-        self.orders_to_send.put(order)
-        self.logger.info("Added order to queue")
-
-    def _remove_order_from_queue(
+    async def _add_order_to_queue(
         self, order: OrderType, hexa_digest: str
     ) -> None:
-        self.orders_to_send.get()
+        await self.orders_to_send.put(order)
+        self.logger.info("Added order to queue")
+
+    async def _remove_order_from_queue(
+        self, order: OrderType, hexa_digest: str
+    ) -> None:
+        await self.orders_to_send.get()
+        self.logger.info("Order removed from the queue")
 
     @staticmethod
     def process_message_with_hash(message: str) -> str:
