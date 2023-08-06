@@ -8,8 +8,9 @@ from typing import Tuple
 import os
 import sys
 from Client import Client
+from Utils import Order
 
-OrderType = str
+OrderType = Order
 
 
 class Server:
@@ -19,7 +20,7 @@ class Server:
         self.__loop = loop
         self.__logger: logging.Logger = self.initialize_logger()
         self.__clients: dict[asyncio.Task, Client] = {}
-        self.__orders_with_hash: dict[OrderType, str] = {}
+        self.__orders_with_hash: dict[str, Order] = {}
         self.orders_to_send = asyncio.Queue(maxsize=100)
 
         self.logger.info(f"Server initialized at {self.ip}:{self.port}")
@@ -149,8 +150,12 @@ class Server:
             order, is_valid = Server.process_message_with_order(client_message)
 
             if is_valid:
-                hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
-                client.writer.write(f"Adding Order\n {order}".encode("utf-8"))
+                hexa_digest = hashlib.md5(
+                    order.representation.encode("utf-8")
+                ).hexdigest()
+                client.writer.write(
+                    f"Adding Order\n {order.representation}".encode("utf-8")
+                )
                 client.writer.write(
                     f"hex digest: {hexa_digest}\n".encode("utf-8")
                 )
@@ -166,7 +171,7 @@ class Server:
             if is_valid:
                 # hexa_digest = hashlib.md5(order.encode("utf-8")).hexdigest()
                 client.writer.write(
-                    f"Removing Order\n {order}".encode("utf-8")
+                    f"Removing Order\n {order.representation}".encode("utf-8")
                 )
                 await self._remove_order_from_queue(order, order_hash)
 
@@ -196,14 +201,16 @@ class Server:
         return order_hash
 
     @staticmethod
-    def process_message_with_order(message: str) -> Tuple[OrderType, bool]:
+    def process_message_with_order(
+        message: str,
+    ) -> Tuple[OrderType, bool]:
         # Enforces format ADD Order(symbol, LONG/SHORT, quantity, price)
         split_client_message = message.split("(")
         order_raw_message = split_client_message[1].split(")")[0]
         order_raw_data = order_raw_message.split(",")
 
         is_valid = False
-        order = "EMPTY"
+        order = Order()
 
         if len(order_raw_data) == 4:
             is_valid = True
@@ -212,7 +219,13 @@ class Server:
             position_type = str(order_raw_data[1])
             quantity = float(order_raw_data[2])
             price = float(order_raw_data[3])
-            order = f"({symbol},{position_type},{quantity},{price})\n"
+
+            order = Order(
+                symbol=symbol,
+                position=position_type,
+                quantity=quantity,
+                price=price,
+            )
 
         return order, is_valid
 
@@ -223,7 +236,7 @@ class Server:
         self, order_hash: str
     ) -> Tuple[OrderType, bool]:
         is_valid = True
-        order = ""
+        order = Order()
         if order_hash in self.orders_with_hash.keys():
             is_valid = True
             order = self.orders_with_hash[order_hash]
