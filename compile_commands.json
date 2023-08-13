@@ -1,0 +1,5 @@
+[
+    {"directory": "/home/reidmen/LostExchangeSystem/lostexchangesystem/cpp",
+     "command": ["/usr/bin/clang++-15", "-Irelative"]
+    }
+]
